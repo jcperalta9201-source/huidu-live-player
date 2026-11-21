@@ -79,25 +79,46 @@ function playYoutube(){
  status.textContent='YouTube: intentando reproducir';
 }
 
+
 function playFacebook(){
- let url=document.getElementById('fb').value.trim();
- try{
-  let u=new URL(url);
-  if(!['facebook.com','www.facebook.com','m.facebook.com','fb.watch'].includes(u.hostname)){
-   throw new Error();
+  let url = document.getElementById('fb').value.trim();
+
+  try {
+    if(!url) {
+      throw new Error('Pega un enlace de Facebook');
+    }
+
+    let u = new URL(url);
+
+    if(!/(^|\.)facebook\.com$/.test(u.hostname)) {
+      throw new Error('El enlace no es de Facebook');
+    }
+
+    player.innerHTML = '';
+
+    let f = document.createElement('iframe');
+
+    f.src = 'https://www.facebook.com/plugins/video.php?href='
+      + encodeURIComponent(url)
+      + '&show_text=false&width=1280&autoplay=false';
+
+    f.style.width = '100%';
+    f.style.height = '100%';
+    f.style.border = '0';
+
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    f.allowFullscreen = true;
+
+    player.appendChild(f);
+
+    status.textContent =
+      'Facebook: cargando reproductor oficial...';
+
+  } catch(e) {
+    status.textContent = e.message || 'Revisa el enlace de Facebook';
   }
-  player.innerHTML='';
-  let f=document.createElement('iframe');
-  f.src='https://www.facebook.com/plugins/video.php?href='+
-   encodeURIComponent(url)+'&show_text=false&autoplay=true';
-  f.allow='autoplay; encrypted-media; picture-in-picture';
-  f.allowFullscreen=true;
-  player.appendChild(f);
-  status.textContent='Facebook: intentando cargar video público';
- }catch(e){
-  status.textContent='Revisa el enlace de Facebook';
- }
 }
+
 
 function openNBA(){
  status.textContent='Abriendo NBA League Pass oficial';
