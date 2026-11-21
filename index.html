@@ -4,53 +4,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Huidu Live Player</title>
+<title>HUIDU LIVE PLAYER</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080d18;color:white;font-family:Arial,sans-serif;text-align:center;padding:20px}
+body{
+ margin:0;padding:16px;
+ background:#080d18;color:white;
+ font-family:Arial,sans-serif;text-align:center
+}
 h1{color:#35d6a0;font-size:28px}
 p{color:#bbc5d4}
-button,input{width:100%;padding:16px;margin:8px 0;border:0;border-radius:10px;font-size:17px}
-button{background:#168b68;color:white;font-weight:bold}
+input,button{
+ width:100%;padding:15px;margin:7px 0;
+ border:0;border-radius:9px;font-size:17px
+}
 input{background:#202a3b;color:white}
-#player{width:100%;aspect-ratio:16/9;background:#000;margin-top:18px}
-iframe{width:100%;height:100%;border:0}
+button{background:#168b68;color:white;font-weight:bold}
 .secondary{background:#26364d}
+#player{
+ width:100%;aspect-ratio:16/9;
+ background:#000;margin-top:15px
+}
+iframe{width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
+
 <h1>HUIDU LIVE PLAYER</h1>
 <p>Reproductor para pantalla LED HD-A3L</p>
 
-<input id="url" placeholder="Pega aquí el enlace de YouTube">
-<button onclick="playVideo()">▶ REPRODUCIR YOUTUBE</button>
+<h3>YOUTUBE LIVE</h3>
+<input id="yt" placeholder="Pega enlace de YouTube">
+<button onclick="playYoutube()">▶ REPRODUCIR YOUTUBE</button>
+
+<h3>FACEBOOK LIVE</h3>
+<input id="fb" placeholder="Pega enlace público de Facebook">
+<button class="secondary" onclick="playFacebook()">▶ REPRODUCIR FACEBOOK</button>
+
+<h3>NBA LEAGUE PASS</h3>
+<button class="secondary" onclick="openNBA()">▶ ABRIR NBA LEAGUE PASS</button>
 
 <div id="player"></div>
 
-<h3>OTRAS PLATAFORMAS</h3>
-<button class="secondary" onclick="openSite('https://www.facebook.com/watch/')">FACEBOOK LIVE</button>
-<button class="secondary" onclick="openSite('https://www.nba.com/watch')">NBA LEAGUE PASS</button>
-
-<p>Los servicios oficiales pueden requerir iniciar sesión.</p>
+<p id="status">Selecciona una plataforma para reproducir</p>
 
 <script>
-function playVideo(){
- let url=document.getElementById('url').value.trim();
+const player=document.getElementById('player');
+const status=document.getElementById('status');
+
+function playYoutube(){
+ let url=document.getElementById('yt').value.trim();
  let id='';
  try{
   let u=new URL(url);
-  if(u.hostname.includes('youtu.be')) id=u.pathname.slice(1);
+  if(u.hostname.includes('youtu.be'))
+   id=u.pathname.slice(1).split('/')[0];
   else if(u.hostname.includes('youtube.com')){
-   id=u.searchParams.get('v') || '';
-   if(!id && u.pathname.includes('/embed/')) id=u.pathname.split('/embed/')[1].split('/')[0];
-   if(!id && u.pathname.includes('/live/')) id=u.pathname.split('/live/')[1].split('/')[0];
+   id=u.searchParams.get('v')||'';
+   if(!id) id=u.pathname.match(/\/(live|embed|shorts)\/([^/]+)/)?.[2]||'';
   }
  }catch(e){}
- if(!id){alert('Pega un enlace válido de YouTube');return;}
- document.getElementById('player').innerHTML=
- '<iframe allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen src="https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1"></iframe>';
+
+ if(!id){
+  status.textContent='Enlace de YouTube no válido';
+  return;
+ }
+
+ player.innerHTML='';
+ let f=document.createElement('iframe');
+ f.src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1';
+ f.allow='autoplay; encrypted-media; picture-in-picture';
+ f.allowFullscreen=true;
+ player.appendChild(f);
+ status.textContent='YouTube: intentando reproducir';
 }
-function openSite(url){window.open(url,'_blank');}
+
+function playFacebook(){
+ let url=document.getElementById('fb').value.trim();
+ try{
+  let u=new URL(url);
+  if(!['facebook.com','www.facebook.com','m.facebook.com','fb.watch'].includes(u.hostname)){
+   throw new Error();
+  }
+  player.innerHTML='';
+  let f=document.createElement('iframe');
+  f.src='https://www.facebook.com/plugins/video.php?href='+
+   encodeURIComponent(url)+'&show_text=false&autoplay=true';
+  f.allow='autoplay; encrypted-media; picture-in-picture';
+  f.allowFullscreen=true;
+  player.appendChild(f);
+  status.textContent='Facebook: intentando cargar video público';
+ }catch(e){
+  status.textContent='Revisa el enlace de Facebook';
+ }
+}
+
+function openNBA(){
+ status.textContent='Abriendo NBA League Pass oficial';
+ window.location.href='https://www.nba.com/watch';
+}
 </script>
+
 </body>
 </html>
